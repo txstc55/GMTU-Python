@@ -5,8 +5,8 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "gmtu"
 version = "0.1.0"
-description = "Send push notification to your phone"
-authors = [{ name = "Xuan Tang", email = "you@example.com" }]
+description = "Send push notification to your phone, with the GMTU app"
+authors = [{ name = "Xuan Tang", email = "txstc55@gmail.com" }]
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.7"

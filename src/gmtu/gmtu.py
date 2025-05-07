@@ -126,7 +126,6 @@ class gmtu:
     # type 5 is event milestone
     if self.__fcm_token == "":
       raise ValueError("gmtu.sendPushNotification: fcm_token is empty")
-
     def do_send():
       headers = {
         'Authorization': f'Bearer {self.__supabase_anon_key}',
@@ -200,6 +199,8 @@ class gmtu:
       self.__parent = parent
       self.__started = False
       self.__milestones = milestones
+      self.__last_progress_update = -9999
+      self.__last_progress_update_time = datetime.utcnow()
 
 
     def __iter__(self):
@@ -214,15 +215,19 @@ class gmtu:
 
       try:
         value = next(self.__iterator)
+        if (self.__total):
+          progress = float(self.__count * 1.0) / self.__total
+          now = datetime.utcnow()
+          time_passed = (now - self.__last_progress_update_time).total_seconds()
+          if progress - self.__last_progress_update >= 0.1 or (time_passed >= 2 and progress != self.__last_progress_update):
+            self.__parent._gmtu__sendPushNotification(2, self.__event_name, progression = float(self.__count * 1.0 / self.__total), eventId = self.__parent._gmtu__event_uuid, silence = True)
+            self.__last_progress_update = progress
+            self.__last_progress_update_time = datetime.utcnow()
         self.__count += 1
-        if self.__total:
-          print(f"{self.__event_name}: {self.__count}/{self.__total}")
-          return value
-        else:
-          print(f"{self.__event_name}: {self.__count}")
-          return value
+        return value
       except StopIteration:
         # → Loop ended normally here
+        self.__parent._gmtu__sendPushNotification(2, self.__event_name, progression = 1.0, eventId = self.__parent._gmtu__event_uuid, silence = True)
         self.__parent._gmtu__sendPushNotification(3, self.__event_name, eventId = self.__parent._gmtu__event_uuid)
         print("Event ended")
         self.__parent._gmtu__event_uuid = self.__parent._gmtu__get_id(self.__event_name) ## refresh the event name so the start isnt the same

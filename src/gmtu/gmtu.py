@@ -5,9 +5,8 @@ import subprocess
 import threading
 import requests
 import uuid
-import datetime
 from typing import List, Dict, Any
-
+from datetime import datetime
 
 class gmtu:
   def __get_machine_uuid():
@@ -55,7 +54,7 @@ class gmtu:
   __system_id: str = __get_machine_uuid()
 
 
-  def __init__(self, supabase_url = "", supabase_anon_key = "", fcm_token = "", event_name = "Code Progress"):
+  def __init__(self, fcm_token = "", supabase_url = "", supabase_anon_key = "", event_name = "Code Progress"):
     ####################################################################################
     ## First we check for supabase anon key and url
     ####################################################################################
@@ -111,19 +110,20 @@ class gmtu:
     self.__fcm_token = token
 
   def __get_id(self, event_name):
-    return str(uuid.uuid5(uuid.NAMESPACE_DNS, f"{self.__event_name}_{self.__system_name}_{event_name}_{datetime.datetime.utcnow().isoformat()}_{uuid.uuid4()}"))
+    return str(uuid.uuid5(uuid.NAMESPACE_DNS, f"{self.__event_name}_{self.__system_name}_{event_name}_{datetime.utcnow().isoformat()}_{uuid.uuid4()}"))
 
 
   ####################################################################################
   ## the most important function, used to send a push notification
   ####################################################################################
-  def __sendPushNotification(self, type, event_name = "", milestones = [], progression: float = 0, eventId: str = "0", silence: bool = False):
+  def __sendPushNotification(self, type, event_name = "", milestoneProgress: float = 0, milestoneMessage: str = "", progression: float = 0, eventId: str = "0", silence: bool = False):
     # let's say
     # type 0 is an one time update, so no progression
     # type 1 is an event starting
     # type 2 is an event progression update
     # type 3 is an event finished
     # type 4 is event cancelled somehow
+    # type 5 is event milestone
     if self.__fcm_token == "":
       raise ValueError("gmtu.sendPushNotification: fcm_token is empty")
 
@@ -136,12 +136,14 @@ class gmtu:
         "fcm": self.__fcm_token,
         "type": type,
         "event_name": event_name,
-        "milestones": milestones,
+        "milestoneProgress": milestoneProgress,
+        "milestoneMessage": milestoneMessage,
         "progression": progression,
         "device_id": self.system_uuid,
         "device_name": self.system_name,
         "event_id": eventId,
-        "silence": silence
+        "silence": silence,
+        "timestamp": datetime.utcnow().isoformat() + "Z"
       }
       try:
         response = requests.post(self.__supabase_url, headers=headers, json=data)
@@ -199,6 +201,7 @@ class gmtu:
       self.__started = False
       self.__milestones = milestones
 
+
     def __iter__(self):
       return self
 
@@ -206,27 +209,30 @@ class gmtu:
       if not self.__started:
         self.__started = True
         # send notification for event starting
-        # self.__parent._gmtu__sendPushNotification(1, self.__event_name, milestones = self.__milestones, eventId = self.__parent._gmtu__event_uuid)
+        self.__parent._gmtu__sendPushNotification(1, self.__event_name, eventId = self.__parent._gmtu__event_uuid)
         print("Event started")
 
       try:
-        value = next(self.iterator)
-        self.count += 1
-        if self.total:
-          print(f"{self.name}: {self.count}/{self.total}")
+        value = next(self.__iterator)
+        self.__count += 1
+        if self.__total:
+          print(f"{self.__event_name}: {self.__count}/{self.__total}")
+          return value
         else:
-          print(f"{self.name}: {self.count}")
+          print(f"{self.__event_name}: {self.__count}")
           return value
       except StopIteration:
         # → Loop ended normally here
-        # self.__parent._gmtu__sendPushNotification(3, self.__event_name, milestones = self.__milestones, eventId = self.__parent._gmtu__event_uuid)
+        self.__parent._gmtu__sendPushNotification(3, self.__event_name, eventId = self.__parent._gmtu__event_uuid)
         print("Event ended")
+        self.__parent._gmtu__event_uuid = self.__parent._gmtu__get_id(self.__event_name) ## refresh the event name so the start isnt the same
         raise
 
     def __del__(self):
-      if self.__started and self.count != self.total:
-        # self.__parent._gmtu__sendPushNotification(4, self.__event_name, milestones = self.__milestones, eventId = self.__parent._gmtu__event_uuid)
+      if self.__started and self.__count != self.__total:
+        self.__parent._gmtu__sendPushNotification(4, self.__event_name, eventId = self.__parent._gmtu__event_uuid)
         print("Event cancelled!")
+        self.__parent._gmtu__event_uuid = self.__parent._gmtu__get_id(self.__event_name) ## refresh the event name so the start isnt the same
 
   ####################################################################################
   ## helper functions

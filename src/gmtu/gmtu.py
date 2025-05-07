@@ -223,7 +223,7 @@ class gmtu:
             self.__parent._gmtu__sendPushNotification(2, self.__event_name, progression = float(self.__count * 1.0 / self.__total), eventId = self.__parent._gmtu__event_uuid, silence = True)
             self.__last_progress_update = self.__count
             self.__last_progress_update_time = datetime.utcnow()
-            print("sent progress at ", progress)
+            # print("sent progress at ", progress)
         self.__count += 1
         return value
       except StopIteration:

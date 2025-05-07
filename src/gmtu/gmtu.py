@@ -219,7 +219,7 @@ class gmtu:
           progress = float(self.__count * 1.0) / self.__total
           now = datetime.utcnow()
           time_passed = (now - self.__last_progress_update_time).total_seconds()
-          if ((self.__count - self.__last_progress_update) / self.__total >= 0.1) or (time_passed >= 2 and progress != self.__last_progress_update):
+          if self.__count > 0 and ((self.__count - self.__last_progress_update) / self.__total >= 0.1) or (time_passed >= 2 and progress != self.__last_progress_update):
             self.__parent._gmtu__sendPushNotification(2, self.__event_name, progression = float(self.__count * 1.0 / self.__total), eventId = self.__parent._gmtu__event_uuid, silence = True)
             self.__last_progress_update = self.__count
             self.__last_progress_update_time = datetime.utcnow()
@@ -227,8 +227,8 @@ class gmtu:
         self.__count += 1
         return value
       except StopIteration:
-        # → Loop ended normally here
-        self.__parent._gmtu__sendPushNotification(2, self.__event_name, progression = 1.0, eventId = self.__parent._gmtu__event_uuid, silence = True)
+        # # → Loop ended normally here
+        # self.__parent._gmtu__sendPushNotification(2, self.__event_name, progression = 1.0, eventId = self.__parent._gmtu__event_uuid, silence = True)
         self.__parent._gmtu__sendPushNotification(3, self.__event_name, eventId = self.__parent._gmtu__event_uuid)
         print("Event ended")
         self.__parent._gmtu__event_uuid = self.__parent._gmtu__get_id(self.__event_name) ## refresh the event name so the start isnt the same

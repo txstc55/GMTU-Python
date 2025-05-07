@@ -199,7 +199,7 @@ class gmtu:
       self.__parent = parent
       self.__started = False
       self.__milestones = milestones
-      self.__last_progress_update = -9999
+      self.__last_progress_update = float("-inf")
       self.__last_progress_update_time = datetime.utcnow()
 
 
@@ -219,10 +219,11 @@ class gmtu:
           progress = float(self.__count * 1.0) / self.__total
           now = datetime.utcnow()
           time_passed = (now - self.__last_progress_update_time).total_seconds()
-          if progress - self.__last_progress_update >= 0.1 or (time_passed >= 2 and progress != self.__last_progress_update):
+          if ((self.__count - self.__last_progress_update) / self.__total >= 0.1) or (time_passed >= 2 and progress != self.__last_progress_update):
             self.__parent._gmtu__sendPushNotification(2, self.__event_name, progression = float(self.__count * 1.0 / self.__total), eventId = self.__parent._gmtu__event_uuid, silence = True)
-            self.__last_progress_update = progress
+            self.__last_progress_update = self.__count
             self.__last_progress_update_time = datetime.utcnow()
+            print("sent progress at ", progress)
         self.__count += 1
         return value
       except StopIteration:

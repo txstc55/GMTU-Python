@@ -87,6 +87,6 @@ So yes, to ensure that the updates are up to date without relying too much on a 
 
 ## App download
 
-ios: N/A
+ios: [link](https://apps.apple.com/us/app/gmtu/id6745209414)
 
 android: N/A

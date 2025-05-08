@@ -211,7 +211,7 @@ class gmtu:
         self.__started = True
         # send notification for event starting
         self.__parent._gmtu__sendPushNotification(1, self.__event_name, eventId = self.__parent._gmtu__event_uuid)
-        print("Event started")
+        # print("Event started")
 
       try:
         value = next(self.__iterator)
@@ -230,14 +230,14 @@ class gmtu:
         # # → Loop ended normally here
         # self.__parent._gmtu__sendPushNotification(2, self.__event_name, progression = 1.0, eventId = self.__parent._gmtu__event_uuid, silence = True)
         self.__parent._gmtu__sendPushNotification(3, self.__event_name, eventId = self.__parent._gmtu__event_uuid)
-        print("Event ended")
+        # print("Event ended")
         self.__parent._gmtu__event_uuid = self.__parent._gmtu__get_id(self.__event_name) ## refresh the event name so the start isnt the same
         raise
 
     def __del__(self):
       if self.__started and self.__count != self.__total:
         self.__parent._gmtu__sendPushNotification(4, self.__event_name, eventId = self.__parent._gmtu__event_uuid)
-        print("Event cancelled!")
+        # print("Event cancelled!")
         self.__parent._gmtu__event_uuid = self.__parent._gmtu__get_id(self.__event_name) ## refresh the event name so the start isnt the same
 
   ####################################################################################

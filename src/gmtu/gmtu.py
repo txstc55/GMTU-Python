@@ -158,7 +158,7 @@ class gmtu:
   ## function to send a one time event notification
   ## this can be used in cli for like, hey compilation finished etc
   ####################################################################################
-  def sendOneTimeEvent(self, content, silence = False) -> None:
+  def sendOTU(self, content, silence = False) -> None:
     otu_event_id = self.__get_id("otu")
     self.__sendPushNotification(0, content, eventId = otu_event_id, silence = silence) # here the event name field in the send notification function will be the content of the push notification
 

@@ -8,7 +8,7 @@ def main():
   parser.add_argument("--silence", action="store_true", help="silence the push notification")
   args = parser.parse_args()
   instance = gmtu(fcm_token = args.fcm_token)
-  instance.sendOneTimeEvent(args.content, silence=args.silence)
+  instance.sendOTU(args.content, silence=args.silence)
 
 if __name__ == "__main__":
   main()
